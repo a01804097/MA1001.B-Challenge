@@ -9,9 +9,9 @@ André Julien Rojas - A01804341
 
 Deyan Manuel Ruelas Gómez - A01803785
 
-## Dengue Impact in (fergo)
+## Dengue Impact in Mexico
 
-blah blah blah
+Dengue is a major public health concern in Mexico, which is a hyperendemic country . Many people also live with chronic health conditions that may influence how the disease develops. In addition, the pandemic period changed how health services operated and how cases were detected ad registered. Studying these factors together can help understand who is most at risk and improve prevention and clinical care.
 
 ## Our questions
 How do pre-existing conditions influence dengue susceptibility and clinical outcomes
@@ -89,83 +89,87 @@ from statsmodels.stats.proportion import proportions_ztest
 
 df = pd.read_excel('nuevo2.xlsx')
 
-# Correct format to 
+# Convert dates to the correct format
 df['fecha'] = pd.to_datetime(df['fecha'], format='%d/%m/%Y', errors='coerce')
 
+# Set the date that separates the two periods
+pandemic_end_date = pd.to_datetime('2023-04-17')
 
-# 2. Definir la fecha de corte (ej. 17 de abril de 2023, fin de emergencia sanitaria por OMS)
-fecha_fin_pandemia = pd.to_datetime('2023-04-17')
+# Split the data into two periods
+pandemia = df[df['fecha'] <= pandemic_end_date]
+post_pandemia = df[df['fecha'] > pandemic_end_date]
 
-# 3. Separar los datos en los dos periodos
-pandemia = df[df['fecha'] <= fecha_fin_pandemia]
-post_pandemia = df[df['fecha'] > fecha_fin_pandemia]
-
-# 4. Calcular el número de muertes (DEFUNCION == 1) y el total de casos por periodo
-# Pandemia (P1)
+# Count deaths and total cases in each period
+# Pandemic
 muertes_pandemia = len(pandemia[pandemia['DEFUNCION'] == 1])
 n_pandemia = len(pandemia)
 
-# Post-pandemia (P2)
+# Post-pandemic
 muertes_post = len(post_pandemia[post_pandemia['DEFUNCION'] == 1])
 n_post = len(post_pandemia)
 
-# Verificación de seguridad para asegurar que los grupos no estén vacíos
-print(f"Total casos pandemia: {n_pandemia} | Defunciones: {muertes_pandemia}")
-print(f"Total casos post-pandemia: {n_post} | Defunciones: {muertes_post}\n")
+# Check the number of cases and deaths
+print(f"Total pandemic cases: {n_pandemia} | Deaths: {muertes_pandemia}")
+print(f"Total post-pandemic cases: {n_post} | Deaths: {muertes_post}\n")
 
-# 5. Realizar la prueba Z para dos proporciones
-# Solo ejecuta la prueba si hay datos en ambos grupos
+# Run the two-proportion Z-test
 if n_pandemia > 0 and n_post > 0:
     count = np.array([muertes_pandemia, muertes_post])
     nobs = np.array([n_pandemia, n_post])
 
-    # alternative='larger' evalúa H1: P1 - P2 > 0
+    # Test whether the death rate was higher during the pandemic
     stat, pval = proportions_ztest(count, nobs, alternative='larger')
 
-    print(f"Estadístico Z: {stat:.4f}")
-    print(f"Valor p (p-value): {pval:.4f}\n")
+    print(f"Z-statistic: {stat:.4f}")
+    print(f"P-value: {pval:.4f}\n")
 
     if pval < 0.05:
-        print("Rechazamos H0: Hay evidencia estadística para afirmar que la mortalidad por dengue fue mayor durante la pandemia.")
+        print("Reject H0: There is statistical evidence that dengue mortality was higher during the pandemic.")
     else:
-        print("No rechazamos H0: No hay evidencia suficiente para afirmar que la mortalidad fue mayor durante la pandemia en comparación a la post-pandemia.")
+        print("Fail to reject H0: There is not enough evidence to conclude that dengue mortality was higher during the pandemic than after it.")
 else:
-    print("Error: Uno de los periodos no tiene datos. Revisa las fechas en la base de datos.")
+    print("Error: One of the periods has no data. Check the dates in the dataset.")
 
 
-# 4. Calcular el número de muertes (DEFUNCION == 1) y el total de casos por periodo
-# Pandemia (P1)
-muertes_pandemia_diabetes = len(pandemia[(pandemia['DEFUNCION'] == 1) & (pandemia['DIABETES'] == 1)])
+# Count deaths and total diabetes cases in each period
+# Pandemic
+muertes_pandemia_diabetes = len(
+    pandemia[(pandemia['DEFUNCION'] == 1) & (pandemia['DIABETES'] == 1)]
+)
 n_pandemia_diabetes = len(pandemia[pandemia['DIABETES'] == 1])
 
-# Post-pandemia (P2)
-muertes_post_diabetes = len(post_pandemia[(post_pandemia['DEFUNCION'] == 1) & (post_pandemia['DIABETES'] == 1)])
+# Post-pandemic
+muertes_post_diabetes = len(
+    post_pandemia[(post_pandemia['DEFUNCION'] == 1) & (post_pandemia['DIABETES'] == 1)]
+)
 n_post_diabetes = len(post_pandemia[post_pandemia['DIABETES'] == 1])
 
-# Verificación de seguridad para asegurar que los grupos no estén vacíos
-print(f"Total casos pandemia: {n_pandemia_diabetes} | Defunciones: {muertes_pandemia_diabetes}")
-print(f"Total casos post-pandemia: {n_post_diabetes} | Defunciones: {muertes_post_diabetes}\n")
+# Check the number of cases and deaths among patients with diabetes
+print(f"Total pandemic cases with diabetes: {n_pandemia_diabetes} | Deaths: {muertes_pandemia_diabetes}")
+print(f"Total post-pandemic cases with diabetes: {n_post_diabetes} | Deaths: {muertes_post_diabetes}\n")
 
+# Run the two-proportion Z-test
 if n_pandemia_diabetes > 0 and n_post_diabetes > 0:
     count = np.array([muertes_pandemia_diabetes, muertes_post_diabetes])
     nobs = np.array([n_pandemia_diabetes, n_post_diabetes])
 
-    # alternative='larger' evalúa H1: P1 - P2 > 0
+    # Test whether the death rate was higher during the pandemic
     stat, pval = proportions_ztest(count, nobs, alternative='larger')
 
-    print(f"Estadístico Z: {stat:.4f}")
-    print(f"Valor p (p-value): {pval:.4f}\n")
+    print(f"Z-statistic: {stat:.4f}")
+    print(f"P-value: {pval:.4f}\n")
 
     if pval < 0.05:
-        print("Rechazamos H0: Hay evidencia estadística para afirmar que la mortalidad por dengue fue mayor durante la pandemia.")
+        print("Reject H0: There is statistical evidence that dengue mortality among patients with diabetes was higher during the pandemic.")
     else:
-        print("No rechazamos H0: No hay evidencia suficiente para afirmar que la mortalidad fue mayor durante la pandemia en comparación a la post-pandemia.")
+        print("Fail to reject H0: There is not enough evidence to conclude that dengue mortality among patients with diabetes was higher during the pandemic than after it.")
 else:
-    print("Error: Uno de los periodos no tiene datos. Revisa las fechas en la base de datos.") 
+    print("Error: One of the periods has no data. Check the dates in the dataset.")
 ```
 #### Output
 
 Total pandemic cases: 171502 | Deaths: 669
+
 Total post-pandemic cases: 198347 | Deaths: 1433
 
 Z-statistic: -13.4096
@@ -175,4 +179,4 @@ Fail to reject H0: There is not enough evidence to conclude that dengue mortalit
 
 ## Conclusion
 
-Given the result of the hypthotesis test, we fail to reject that during the pandemic the dengue mortality was higher.
+Since the null hyphotesis (H0) was not rejected,there is not enough statistical evidence to conclude that dengue mortality was higher during the pandemic than in the post-pandemic period. Although the data may suggest that there were fewer deaths from dengue during the pandemic, it is important to consider that some of these cases might have been misdiagnosed. Since dengue and COVID-19 share similar symptoms, some patients may have been diagnosed with COVID-19 without being tested for dengue. Furthermore, the original dataset did not include information about COVID-19 cases or possible misdiagnoses during the pandemic years, so there is no certainty that results weren't affected. Therefore, even though the data shows a possible difference in mortality between the two periods, there is some uncertainty in this. 
